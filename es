@@ -1,4 +1,5 @@
 #!/bin/bash
+set -o history
 
 #-----------------------------------------------------------------------------#
 #PURPOSE: enable use of explainshell direct from the commandline
@@ -10,16 +11,30 @@
 # $ es [CMDLINE]
 # example: 
 # $ es tar xzvf archive.tar.gz
+#
+# if run without args then selects last command in shell history
+# $ es
 
 # ensure place on your PATH (and provide u+x etc)
 
-
-
+echo stuff: "${@}"
 
 #-----------------------------------------------------------------------------#
 # Get command to parse
 #-----------------------------------------------------------------------------#
-commandLine=( "$@" )
+
+#without args last command in shell history or "$@"
+if [[ "${#}" -eq 0 ]]
+then
+    commandLine=$(history 2 | sed 's/^ *[^ ]* *//')
+    #commandLine=$(history 2 | sed 's/^ *[^ ]* *//' | cut -d$'\n' -f1)
+    echo 1 "${#}"
+else
+    commandLine=( "${@}" )
+    echo 2 "$#"
+fi
+
+#commandLine=( "${@}" )
 
 commandLine2=( )
 
@@ -47,9 +62,9 @@ if [[ -n ${commandLine} ]]
 then
     if [[ ! -z $(command -v x-www-browser) ]]
     then
-        x-www-browser http://explainshell.com/explain?cmd="${sanitisedLine}";
+        x-www-browser http://explainshell.com/explain?cmd="${sanitisedLine}"
     else
-        xdg-open http://explainshell.com/explain?cmd="${sanitisedLine}";
+        xdg-open http://explainshell.com/explain?cmd="${sanitisedLine}" &> /dev/null
     fi
 else
     echo "Your command expression:${commandLine} is empty";
